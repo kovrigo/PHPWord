@@ -42,6 +42,13 @@ class HTML extends AbstractWriter implements WriterInterface
     protected $notes = array();
 
     /**
+     * Directory to save external files
+     * 
+     * @var ?string
+     */
+    protected $filesDir = null;
+
+    /**
      * Create new instance
      */
     public function __construct(PhpWord $phpWord = null)
@@ -69,7 +76,31 @@ class HTML extends AbstractWriter implements WriterInterface
      */
     public function save($filename = null)
     {
+        $this->setFilesDir($filename);
         $this->writeFile($this->openFile($filename), $this->getContent());
+    }
+
+    /**
+     * Get files directory
+     * @return ?string
+     */
+    public function getFilesDir() {
+        return $this->filesDir;
+    }
+
+    /**
+     * Set files directory
+     * @param ?string $filename 
+     */
+    public function setFilesDir($filename = null) {
+        if (!is_null($filename)) {
+            $parts = pathinfo($filename);
+            $dir = $parts["dirname"] . "/" . $parts["filename"] . "._files";
+            if (!is_dir($dir)) {
+                mkdir($dir);
+            }
+            $this->filesDir = $dir . "/";
+        }
     }
 
     /**

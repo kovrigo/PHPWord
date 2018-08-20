@@ -48,6 +48,15 @@ class Body extends AbstractPart
         $content .= $this->writeNotes();
         $content .= '</body>' . PHP_EOL;
 
+        // Wrap lists with correct ul and ol tags
+        $content = preg_replace('/{end_PHPWordList(\d+)_(bullet|decimal)}(.*?){begin_PHPWordList\1_\2}/s', "$3", $content);
+        $content = preg_replace_callback('/{(begin|end)_PHPWordList\d+_(bullet|decimal)}/',
+            function ($matches) {
+                $res = $matches[1] == "begin" ? "" : "/";           
+                $res .= $matches[2] == "bullet" ? "ul" : "ol";
+                return "<" . $res . ">";
+            }, $content);
+
         return $content;
     }
 

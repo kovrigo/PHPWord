@@ -42,10 +42,34 @@ class Image extends Text
         if ($imageData !== null) {
             $styleWriter = new ImageStyleWriter($this->element->getStyle());
             $style = $styleWriter->write();
-            $imageData = 'data:' . $this->element->getImageType() . ';base64,' . $imageData;
+
+            $dir = $this->parentWriter->getFilesDir();
+            if (is_null($dir)) {
+                $src = 'data:' . $this->element->getImageType() . ';base64,' . $imageData;
+            } else {
+                $src = $dir . $this->element->getTarget();
+                $data = base64_decode($imageData);
+                $image = imagecreatefromstring($data);
+                $imageContentType = $this->element->getImageType();
+                $imageType = explode("/", $imageContentType)[1];
+                header("Content-Type: " . $imageContentType);
+                switch ($imageType) {
+                    case "png":
+                        imageAlphaBlending($image, true);
+                        imageSaveAlpha($image, true);
+                        imagepng($image, $src);
+                        break;
+                    case "jpeg":
+                        imagejpeg($image, $src);
+                        break;
+                    default:
+                        return "";
+                        break;
+                }
+            }
 
             $content .= $this->writeOpening();
-            $content .= "<img border=\"0\" style=\"{$style}\" src=\"{$imageData}\"/>";
+            $content .= "<img border=\"0\" style=\"{$style}\" src=\"{$src}\"/>";
             $content .= $this->writeClosing();
         }
 
